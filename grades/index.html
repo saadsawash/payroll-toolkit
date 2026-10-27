@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>الدرجة والمرحلة</title>
+    <link rel="stylesheet" href="../fonts.css" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <div class="page page--narrow">
+      <header class="header">
+        <a class="back-link" href="../">العودة للرئيسية</a>
+        <h1>الدرجة والمرحلة</h1>
+        <p class="subtitle">أدخل الراتب الاسمي بالآلاف لمعرفة الدرجة والمرحلة فوراً.</p>
+      </header>
+
+      <main>
+        <form class="form lookup-form" id="grade-form" autocomplete="off" onsubmit="return false;">
+          <div class="field">
+            <label for="salary-thousands">الراتب الاسمي</label>
+            <div class="input-with-suffix">
+              <input
+                type="text"
+                id="salary-thousands"
+                name="salaryThousands"
+                inputmode="numeric"
+                placeholder="مثال: 380,000"
+                autofocus
+                autocomplete="off"
+              />
+              <span class="suffix">دينار</span>
+            </div>
+          </div>
+
+          <div class="lookup-result" id="lookup-result" aria-live="polite">
+            <div class="lookup-cards">
+              <div class="lookup-card">
+                <span class="lookup-label">الدرجة</span>
+                <strong class="lookup-value" id="grade-value">—</strong>
+              </div>
+              <div class="lookup-card">
+                <span class="lookup-label">المرحلة</span>
+                <strong class="lookup-value" id="level-value">—</strong>
+              </div>
+            </div>
+            <p class="lookup-status" id="lookup-status" hidden></p>
+          </div>
+        </form>
+      </main>
+    </div>
+
+    <script src="../shared/salary-ladder.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

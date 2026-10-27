@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>احتساب فروقات العلاوة والترفيع</title>
+    <link rel="stylesheet" href="../fonts.css" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="header">
+        <a class="back-link" href="../">العودة للرئيسية</a>
+        <h1>احتساب فروقات العلاوة والترفيع</h1>
+        <p class="subtitle">
+          احتساب فروقات العلاوة أو الترفيع أو كليهما في استمارة واحدة.
+        </p>
+      </header>
+
+      <main>
+        <form id="combined-form" class="form" novalidate>
+          <div class="clear-fab-wrap">
+            <button type="reset" class="clear-fab" aria-label="تفريغ الحقول" aria-describedby="clear-fab-tooltip">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M3 6h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            </button>
+            <span id="clear-fab-tooltip" class="clear-fab-tooltip" role="tooltip">تفريغ الحقول</span>
+          </div>
+
+          <section class="section" aria-labelledby="type-heading">
+            <fieldset class="choice-group">
+              <legend id="type-heading">نوع المعاملة</legend>
+              <div class="choice-options">
+                <label class="choice">
+                  <input type="radio" name="changeType" value="allowance" />
+                  <span>علاوة</span>
+                </label>
+                <label class="choice">
+                  <input type="radio" name="changeType" value="promotion" />
+                  <span>ترفيع</span>
+                </label>
+                <label class="choice">
+                  <input type="radio" name="changeType" value="both" checked />
+                  <span>علاوة ثم ترفيع</span>
+                </label>
+              </div>
+            </fieldset>
+          </section>
+
+          <section class="section" aria-labelledby="employee-heading">
+            <h2 id="employee-heading">بيانات الموظف</h2>
+
+            <div class="grid">
+              <div class="field">
+                <label for="employee-name">اسم الموظف</label>
+                <input
+                  type="text"
+                  id="employee-name"
+                  name="employeeName"
+                  autocomplete="name"
+                  placeholder="مثال: أحمد محمد علي"
+                  required
+                />
+                <p class="error" id="employee-name-error" hidden>
+                  يرجى إدخال اسم الموظف.
+                </p>
+              </div>
+
+              <div class="field">
+                <label for="job-title">العنوان الوظيفي</label>
+                <input
+                  type="text"
+                  id="job-title"
+                  name="jobTitle"
+                  placeholder="مثال: معاون مدير"
+                  required
+                />
+                <p class="error" id="job-title-error" hidden>
+                  يرجى إدخال العنوان الوظيفي.
+                </p>
+              </div>
+            </div>
+
+            <div class="grid">
+              <div class="field">
+                <label for="education-level">الشهادة</label>
+                <select id="education-level" name="educationLevel" required>
+                  <option value="" disabled selected>اختر الشهادة</option>
+                  <option value="ابتدائية">ابتدائية</option>
+                  <option value="متوسطة">متوسطة</option>
+                  <option value="إعدادية">إعدادية</option>
+                  <option value="دبلوم">دبلوم</option>
+                  <option value="بكالوريوس">بكالوريوس</option>
+                  <option value="ماجستير">ماجستير</option>
+                  <option value="دكتوراه">دكتوراه</option>
+                </select>
+                <p class="error" id="education-level-error" hidden>
+                  يرجى اختيار الشهادة.
+                </p>
+              </div>
+
+              <div class="field">
+                <label for="salary-list-order">التسلسل في قائمة الراتب <span class="optional">(اختياري)</span></label>
+                <input
+                  type="number"
+                  id="salary-list-order"
+                  name="salaryListOrder"
+                  min="1"
+                  max="5000"
+                  step="1"
+                  inputmode="numeric"
+                  placeholder="مثال: 12"
+                />
+                <p class="error" id="salary-list-order-error" hidden>
+                  يرجى إدخال رقم بين ١ و ٥٠٠٠.
+                </p>
+              </div>
+            </div>
+
+            <div class="grid">
+              <div class="field">
+                <label for="org-name">اسم الدائرة <span class="optional">(اختياري)</span></label>
+                <input
+                  type="text"
+                  id="org-name"
+                  name="orgName"
+                  autocomplete="organization"
+                  placeholder="مثال: مديرية التقاعد"
+                  aria-describedby="org-name-hint"
+                />
+                <p class="hint" id="org-name-hint">
+                  يظهر في رأس الاستمارة المطبوعة ويبقى محفوظاً بعد تفريغ الحقول.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section class="section" id="allowance-section" aria-labelledby="allowance-heading">
+            <h2 id="allowance-heading">بيانات العلاوة</h2>
+
+            <div class="grid">
+              <div class="field">
+                <label for="allowance-number">رقم العلاوة</label>
+                <input
+                  type="number"
+                  id="allowance-number"
+                  name="allowanceNumber"
+                  min="1"
+                  step="1"
+                  inputmode="numeric"
+                  placeholder="مثال: 5"
+                  required
+                />
+                <p class="error" id="allowance-number-error" hidden>
+                  يرجى إدخال رقم العلاوة.
+                </p>
+              </div>
+
+              <div class="field">
+                <label for="allowance-doc-date">تاريخ العلاوة</label>
+                <input
+                  type="text"
+                  id="allowance-doc-date"
+                  name="allowanceDocDate"
+                  class="date-input"
+                  inputmode="numeric"
+                  placeholder="2026-02-30"
+                  autocomplete="off"
+                  dir="ltr"
+                  required
+                />
+                <p class="error" id="allowance-doc-date-error" hidden>
+                  يرجى إدخال تاريخ صحيح مثل 2026-02-30.
+                </p>
+              </div>
+            </div>
+
+            <p class="hint section-hint">
+              تُحتسب أشهر العلاوة من شهر البداية لغاية الشهر الذي يسبق شهر النهاية.
+            </p>
+
+            <div
+              id="allowances-list"
+              class="allowances-list"
+              aria-label="قائمة العلاوات"
+            ></div>
+
+            <button
+              type="button"
+              id="add-allowance"
+              class="btn btn-secondary add-allowance-btn"
+            >
+              إضافة علاوة
+            </button>
+          </section>
+
+          <section class="section" id="promotion-section" aria-labelledby="promotion-heading">
+            <h2 id="promotion-heading">بيانات الترفيع</h2>
+
+            <div class="grid">
+              <div class="field">
+                <label for="order-number">رقم الأمر الإداري</label>
+                <input
+                  type="number"
+                  id="order-number"
+                  name="orderNumber"
+                  min="1"
+                  step="1"
+                  inputmode="numeric"
+                  placeholder="مثال: 225"
+                  required
+                />
+                <p class="error" id="order-number-error" hidden>
+                  يرجى إدخال رقم الأمر.
+                </p>
+              </div>
+
+              <div class="field">
+                <label for="order-date">تاريخ الأمر الإداري</label>
+                <input
+                  type="text"
+                  id="order-date"
+                  name="orderDate"
+                  class="date-input"
+                  inputmode="numeric"
+                  placeholder="2026-07-20"
+                  autocomplete="off"
+                  dir="ltr"
+                  required
+                />
+                <p class="error" id="order-date-error" hidden>
+                  يرجى إدخال تاريخ صحيح مثل 2026-07-20.
+                </p>
+              </div>
+            </div>
+
+            <div class="grid">
+              <div class="field">
+                <label for="new-job-title">العنوان الوظيفي بعد الترفيع</label>
+                <input
+                  type="text"
+                  id="new-job-title"
+                  name="newJobTitle"
+                  placeholder="مثال: ملاحظ أقدم"
+                  required
+                />
+                <p class="error" id="new-job-title-error" hidden>
+                  يرجى إدخال العنوان الوظيفي بعد الترفيع.
+                </p>
+              </div>
+            </div>
+
+            <div class="grid">
+              <div class="field">
+                <label for="old-salary">الراتب قبل الترفيع</label>
+                <div class="input-with-suffix">
+                  <input
+                    type="number"
+                    id="old-salary"
+                    name="oldSalary"
+                    min="0"
+                    step="1"
+                    inputmode="numeric"
+                    placeholder="0"
+                    aria-describedby="old-salary-hint"
+                    required
+                  />
+                  <span class="suffix">دينار</span>
+                </div>
+                <p class="hint" id="old-salary-hint" hidden>
+                  يساوي الراتب بعد آخر علاوة.
+                </p>
+                <p class="error" id="old-salary-error" hidden>
+                  يرجى إدخال الراتب قبل الترفيع.
+                </p>
+              </div>
+
+              <div class="field">
+                <label for="new-salary">الراتب بعد الترفيع</label>
+                <div class="input-with-suffix">
+                  <input
+                    type="number"
+                    id="new-salary"
+                    name="newSalary"
+                    min="0"
+                    step="1"
+                    inputmode="numeric"
+                    placeholder="0"
+                    required
+                  />
+                  <span class="suffix">دينار</span>
+                </div>
+                <p class="error" id="new-salary-error" hidden>
+                  يرجى إدخال الراتب بعد الترفيع.
+                </p>
+              </div>
+            </div>
+
+            <div class="grid">
+              <div class="field">
+                <label for="from-date">تاريخ الاستحقاق من</label>
+                <input
+                  type="text"
+                  id="from-date"
+                  name="fromDate"
+                  class="date-input"
+                  inputmode="numeric"
+                  placeholder="2026-10-13"
+                  autocomplete="off"
+                  dir="ltr"
+                  required
+                />
+                <p class="error" id="from-date-error" hidden>
+                  يرجى إدخال تاريخ صحيح مثل 2026-10-13.
+                </p>
+              </div>
+
+              <div class="field">
+                <label for="to-date">تاريخ الاستحقاق إلى <span class="optional">(اليوم ٣٠)</span></label>
+                <input
+                  type="text"
+                  id="to-date"
+                  name="toDate"
+                  class="date-input"
+                  inputmode="numeric"
+                  placeholder="2026-10-30"
+                  autocomplete="off"
+                  dir="ltr"
+                  required
+                />
+                <p class="error" id="to-date-error" hidden>
+                  يرجى إدخال تاريخ ينتهي باليوم ٣٠ مثل 2026-10-30.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <div class="actions">
+            <button type="submit" class="btn btn-primary">احتساب الفروقات</button>
+          </div>
+        </form>
+
+        <section id="result" class="result" aria-live="polite" hidden>
+          <h2 class="no-print">نتيجة الاحتساب</h2>
+          <div id="print-sheet" class="print-sheet">
+            <div id="result-content"></div>
+            <p id="print-continuation" class="print-continuation-notice" hidden>
+              يتبع في الصفحة التالية
+            </p>
+          </div>
+          <div class="result-actions no-print">
+            <button id="print-btn" type="button" class="btn btn-primary">
+              طباعة استمارة المتغيرات
+            </button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
+
+    <script src="../shared/salary-ladder.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

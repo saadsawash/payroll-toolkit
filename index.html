@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>أدوات الراتب</title>
+    <link rel="stylesheet" href="fonts.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="home-body">
+    <div class="home">
+      <header class="home-header">
+        <div class="home-brand" aria-hidden="true">
+          <svg class="home-brand-icon" viewBox="0 0 48 48" focusable="false">
+            <rect
+              x="10"
+              y="6"
+              width="28"
+              height="36"
+              rx="4"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+            />
+            <rect x="16" y="12" width="16" height="7" rx="1.5" fill="currentColor" opacity="0.9" />
+            <circle cx="18" cy="27" r="2.1" fill="currentColor" />
+            <circle cx="24" cy="27" r="2.1" fill="currentColor" />
+            <circle cx="30" cy="27" r="2.1" fill="currentColor" />
+            <circle cx="18" cy="34" r="2.1" fill="currentColor" />
+            <circle cx="24" cy="34" r="2.1" fill="currentColor" />
+            <circle cx="30" cy="34" r="2.1" fill="currentColor" opacity="0.55" />
+          </svg>
+        </div>
+        <p class="home-subtitle">اختر التطبيق للمتابعة</p>
+      </header>
+
+      <nav class="app-grid" aria-label="قائمة التطبيقات" id="app-grid">
+        <a class="app-tile app-tile--live" href="combined/" style="--i: 0">
+          احتساب فروقات العلاوة والترفيع
+        </a>
+        <a class="app-tile app-tile--live" href="allowances/" style="--i: 1">
+          احتساب فروقات العلاوة
+        </a>
+        <a class="app-tile app-tile--live" href="promotions/" style="--i: 2">
+          احتساب فروقات الترفيع
+        </a>
+        <a class="app-tile app-tile--live" href="grades/" style="--i: 3">
+          الدرجة والمرحلة
+        </a>
+      </nav>
+    </div>
+
+    <script>
+      (function () {
+        var grid = document.getElementById("app-grid");
+        var frag = document.createDocumentFragment();
+        for (var i = 4; i < 9; i++) {
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "app-tile app-tile--soon";
+          btn.disabled = true;
+          btn.textContent = "قريباً";
+          btn.style.setProperty("--i", String(i));
+          frag.appendChild(btn);
+        }
+        grid.appendChild(frag);
+      })();
+    </script>
+  </body>
+</html>
