@@ -598,7 +598,7 @@ function stepBadge(number, title) {
   return `<span class="step-badge"><span class="step-num">${toEasternDigitString(number)}</span>${title}</span>`;
 }
 
-function renderAllowanceBlock(title, data) {
+function renderAllowanceBlock(title, data, finalStep = "") {
   const firstMonth = data.monthsList[0];
   const lastMonth = data.monthsList[data.monthsList.length - 1];
 
@@ -641,6 +641,7 @@ function renderAllowanceBlock(title, data) {
             </div>
           </div>
         </li>
+        ${finalStep}
       </ol>
     </section>
   `;
@@ -802,6 +803,10 @@ function renderResult({ type, increments, promotion }, info) {
   // Promotion only: the promotion arrears are the final amount (no salary
   // added once on top). Other types add the last new salary once.
   const promotionOnly = type === "promotion";
+  // Increments only: the months run up to but not including the end month,
+  // so the salary added once is the end month's own salary (step 4).
+  const allowanceOnly = type === "allowance";
+  const finalSalaryMonth = allowanceOnly ? lastEnd : paymentMonth;
   const grandTotal = promotionOnly
     ? promotion.promotionTotal
     : parts.reduce((sum, part) => sum + part.amount, 0) + finalSalary;
@@ -842,8 +847,36 @@ function renderResult({ type, increments, promotion }, info) {
       : []),
   ].join("");
 
+  const allowanceFinalStep = allowanceOnly
+    ? `
+      <li>
+        ${stepBadge(4, "المبلغ النهائي")}
+        <div class="step-body">
+          <div class="equation equation--total">
+            ${parts
+              .map(
+                (part, index) =>
+                  `${index > 0 ? '<span class="eq-op">+</span>' : ""}${eqTerm(part.amount, part.label)}`,
+              )
+              .join("")}
+            <span class="eq-op">+</span>
+            ${eqTerm(finalSalary, "الراتب بعد العلاوة", { meta: `راتب ${monthLabel(finalSalaryMonth.year, finalSalaryMonth.month)}` })}
+            <span class="eq-op">=</span>
+            ${eqTerm(grandTotal, "المبلغ النهائي", { strong: true })}
+          </div>
+        </div>
+      </li>
+    `
+    : "";
+
   const blocksHtml = [
-    ...increments.map((item, index) => renderAllowanceBlock(allowanceTitle(index, count), item)),
+    ...increments.map((item, index) =>
+      renderAllowanceBlock(
+        allowanceTitle(index, count),
+        item,
+        allowanceOnly && index === count - 1 ? allowanceFinalStep : "",
+      ),
+    ),
     ...(promotion ? [renderPromotionBlock(promotion, { isFinal: promotionOnly })] : []),
   ].join("");
 
@@ -856,7 +889,7 @@ function renderResult({ type, increments, promotion }, info) {
 
   const finalSalaryLabel = promotion ? "الراتب بعد الترفيع" : "الراتب بعد آخر علاوة";
 
-  const totalBlockHtml = promotionOnly
+  const totalBlockHtml = promotionOnly || allowanceOnly
     ? ""
     : `
       <section class="allowance-block allowance-block--combined">
