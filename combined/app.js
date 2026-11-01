@@ -646,7 +646,9 @@ function renderAllowanceBlock(title, data) {
   `;
 }
 
-function renderPromotionBlock(data) {
+function renderPromotionBlock(data, { isFinal = false } = {}) {
+  const totalTitle = isFinal ? "المبلغ النهائي" : "احتساب مجموع فروقات الترفيع";
+  const totalLabel = isFinal ? "المبلغ النهائي" : "فروقات الترفيع";
   const laterStart = addMonths(data.start, 1);
   const laterRange =
     data.laterMonths === 1
@@ -674,14 +676,14 @@ function renderPromotionBlock(data) {
         </div>
       </li>
       <li>
-        ${stepBadge(4, "احتساب مجموع فروقات الترفيع")}
+        ${stepBadge(4, totalTitle)}
         <div class="step-body">
           <div class="equation">
             ${eqTerm(data.partialAmount, "فرق الأيام")}
             <span class="eq-op">+</span>
             ${eqTerm(data.newSalaryTotal, "مجموع الرواتب")}
             <span class="eq-op">=</span>
-            ${eqTerm(data.promotionTotal, "فروقات الترفيع", { strong: true })}
+            ${eqTerm(data.promotionTotal, totalLabel, { strong: true })}
           </div>
         </div>
       </li>
@@ -797,7 +799,12 @@ function renderResult({ type, increments, promotion }, info) {
     })),
     ...(promotion ? [{ amount: promotion.promotionTotal, label: "فروقات الترفيع" }] : []),
   ];
-  const grandTotal = parts.reduce((sum, part) => sum + part.amount, 0) + finalSalary;
+  // Promotion only: the promotion arrears are the final amount (no salary
+  // added once on top). Other types add the last new salary once.
+  const promotionOnly = type === "promotion";
+  const grandTotal = promotionOnly
+    ? promotion.promotionTotal
+    : parts.reduce((sum, part) => sum + part.amount, 0) + finalSalary;
   const labelPeriods = parts.length > 1;
 
   const allowanceDocLine = includesAllowance(type)
@@ -837,7 +844,7 @@ function renderResult({ type, increments, promotion }, info) {
 
   const blocksHtml = [
     ...increments.map((item, index) => renderAllowanceBlock(allowanceTitle(index, count), item)),
-    ...(promotion ? [renderPromotionBlock(promotion)] : []),
+    ...(promotion ? [renderPromotionBlock(promotion, { isFinal: promotionOnly })] : []),
   ].join("");
 
   const sumTerms = parts
@@ -848,6 +855,21 @@ function renderResult({ type, increments, promotion }, info) {
     .join("");
 
   const finalSalaryLabel = promotion ? "الراتب بعد الترفيع" : "الراتب بعد آخر علاوة";
+
+  const totalBlockHtml = promotionOnly
+    ? ""
+    : `
+      <section class="allowance-block allowance-block--combined">
+        <h3 class="allowance-block-title">الإجمالي</h3>
+        <div class="equation equation--total">
+          ${sumTerms}
+          <span class="eq-op">+</span>
+          ${eqTerm(finalSalary, finalSalaryLabel, { meta: `راتب ${monthLabel(paymentMonth.year, paymentMonth.month)}` })}
+          <span class="eq-op">=</span>
+          ${eqTerm(grandTotal, "المبلغ النهائي", { strong: true })}
+        </div>
+      </section>
+    `;
 
   const orgHtml = info.orgName
     ? `<p class="sheet-org">${escapeHtml(info.orgName)}</p>`
@@ -888,16 +910,7 @@ function renderResult({ type, increments, promotion }, info) {
 
     <div class="result-calculations">
       ${blocksHtml}
-      <section class="allowance-block allowance-block--combined">
-        <h3 class="allowance-block-title">الإجمالي</h3>
-        <div class="equation equation--total">
-          ${sumTerms}
-          <span class="eq-op">+</span>
-          ${eqTerm(finalSalary, finalSalaryLabel, { meta: `راتب ${monthLabel(paymentMonth.year, paymentMonth.month)}` })}
-          <span class="eq-op">=</span>
-          ${eqTerm(grandTotal, "المبلغ النهائي", { strong: true })}
-        </div>
-      </section>
+      ${totalBlockHtml}
     </div>
 
     <div class="total">
