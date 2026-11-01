@@ -1113,6 +1113,15 @@ input[readonly] {
   font-weight: 500;
 }
 
+/* Keeps a "label:" on one line; long values (job titles) may still wrap. */
+.summary-fact {
+  white-space: nowrap;
+}
+
+.summary-fact .summary-doc {
+  white-space: normal;
+}
+
 .summary-dot {
   margin-inline: 0.2rem;
   color: var(--line-strong);

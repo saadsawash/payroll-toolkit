@@ -875,9 +875,9 @@ function renderResult({ type, increments, promotion }, info) {
           ${sequenceHtml}
         </div>
         <p class="summary-facts">
-          <span>${escapeHtml(info.jobTitle)}</span>
+          <span class="summary-fact">العنوان الوظيفي: <span class="summary-doc">${escapeHtml(info.jobTitle)}</span></span>
           <span class="summary-dot" aria-hidden="true">·</span>
-          <span>${escapeHtml(info.educationLevel)}</span>
+          <span class="summary-fact">الشهادة: <span class="summary-doc">${escapeHtml(info.educationLevel)}</span></span>
         </p>
       </div>
 
