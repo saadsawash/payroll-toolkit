@@ -697,6 +697,233 @@ input[readonly] {
   flex: 1 1 auto;
 }
 
+/* ---------- Employee history drawer (combined/) ---------- */
+.history-toggle {
+  position: fixed;
+  top: 1rem;
+  inset-inline-start: 1rem;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+
+.history-toggle svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  color: var(--accent);
+}
+
+.history-toggle:hover {
+  border-color: var(--accent);
+}
+
+.history-toggle:focus-visible {
+  outline: 3px solid rgba(47, 107, 82, 0.25);
+  outline-offset: 2px;
+}
+
+.history-count {
+  min-width: 1.35rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: rgba(31, 77, 58, 0.1);
+  color: var(--accent);
+  font-size: 0.78rem;
+  line-height: 1.35rem;
+  text-align: center;
+}
+
+.history-drawer {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inset-inline-end: auto;
+  width: min(380px, 100%);
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-inline-end: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 0 40px rgba(28, 27, 25, 0.18);
+}
+
+.history-drawer[open] {
+  animation: history-slide-in 0.22s ease-out;
+}
+
+.history-drawer::backdrop {
+  background: rgba(28, 27, 25, 0.28);
+}
+
+@keyframes history-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.history-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1.25rem 1.1rem 1rem;
+}
+
+.history-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.history-head h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.history-close,
+.history-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.history-close svg,
+.history-remove svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.history-close:hover,
+.history-remove:hover,
+.history-close:focus-visible,
+.history-remove:focus-visible {
+  border-color: var(--line-strong);
+  color: var(--ink);
+  outline: none;
+}
+
+.history-note {
+  margin: 0.4rem 0 0.9rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.history-list {
+  flex: 1 1 auto;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.history-load {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  padding: 0.7rem 0.6rem;
+  border: none;
+  border-radius: 0.6rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.history-load:hover {
+  background: #f7f5f1;
+}
+
+.history-load:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+.history-name {
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.history-meta {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-empty {
+  flex: 1 1 auto;
+  margin: 1.5rem 0 0;
+  color: var(--muted);
+  text-align: center;
+}
+
+.history-foot {
+  padding-top: 0.85rem;
+}
+
+.history-clear {
+  padding: 0.35rem 0.2rem;
+  border: none;
+  background: none;
+  color: var(--danger);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.history-clear:hover {
+  text-decoration: underline;
+}
+
+.history-clear:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 .toast {
   position: fixed;
   bottom: 1.5rem;

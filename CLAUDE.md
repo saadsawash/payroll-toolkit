@@ -107,6 +107,12 @@ Known gaps between the code and the guide (fix only when asked):
 - If you change a draft's shape, bump the key version or migrate old data; users may have drafts saved.
 - Clearing the form removes the saved draft.
 
+## Employee history (combined/)
+
+- Every successful calculation in `combined/` saves the form data (the `readFormData()` shape) plus the final amount under `tools-combined-history-v1`, newest first, max 50 (`MAX_HISTORY`). The same employee name (trimmed, spaces collapsed) replaces its older entry.
+- The fixed `السجل` button (top right) opens a `<dialog>` drawer listing the entries. Clicking one restores all its fields via `applyFormData(data, { replaceAll: true })`, hides the old result and closes the drawer; it does not recalculate. Entries can be removed one by one or all at once (with a confirm). Clearing the form does not touch the history.
+- History holds real employee data in the browser only; it must never be exported into the repo. If its shape changes, bump the key version or migrate.
+
 ## Printing
 
 - The printed sheet is the office deliverable. **Any change to result rendering or `styles.css` must be checked in print preview.**

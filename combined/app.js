@@ -10,6 +10,8 @@ const oldSalaryHint = document.getElementById("old-salary-hint");
 const orgNameInput = document.getElementById("org-name");
 const STORAGE_KEY = "tools-combined-v1";
 const ORG_NAME_KEY = "tools-org-name-v1";
+const HISTORY_KEY = "tools-combined-history-v1";
+const MAX_HISTORY = 50;
 const MAX_ALLOWANCES = 10;
 const DAYS_PER_MONTH = 30;
 const DEFAULT_TYPE = "both";
@@ -953,6 +955,8 @@ function renderResult({ type, increments, promotion }, info) {
       <strong>${formatNumber(grandTotal)} دينار</strong>
     </div>
   `;
+
+  return grandTotal;
 }
 
 function readFormData() {
@@ -969,28 +973,39 @@ function saveFormData() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(readFormData()));
 }
 
+/**
+ * Puts saved form data (the readFormData() shape) into the form.
+ * With `replaceAll`, fields missing from the data are emptied instead of kept.
+ */
+function applyFormData(data, { replaceAll = false } = {}) {
+  if (sheetTitles[data.type]) setSelectedType(data.type);
+
+  for (const { id } of staticFields) {
+    if (data[id] !== undefined && data[id] !== null) {
+      document.getElementById(id).value = data[id];
+    } else if (replaceAll) {
+      document.getElementById(id).value = "";
+    }
+  }
+
+  if (Array.isArray(data.allowances) && data.allowances.length > 0) {
+    allowances = data.allowances.slice(0, MAX_ALLOWANCES).map((item) => ({
+      currentSalary: item.currentSalary || "",
+      newSalary: item.newSalary || "",
+      fromDate: item.fromDate || "",
+      toDate: item.toDate || "",
+    }));
+  } else if (replaceAll) {
+    allowances = [emptyAllowance()];
+  }
+}
+
 function loadFormData() {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) return false;
 
   try {
-    const data = JSON.parse(raw);
-    if (sheetTitles[data.type]) setSelectedType(data.type);
-
-    for (const { id } of staticFields) {
-      if (data[id] !== undefined && data[id] !== null) {
-        document.getElementById(id).value = data[id];
-      }
-    }
-
-    if (Array.isArray(data.allowances) && data.allowances.length > 0) {
-      allowances = data.allowances.slice(0, MAX_ALLOWANCES).map((item) => ({
-        currentSalary: item.currentSalary || "",
-        newSalary: item.newSalary || "",
-        fromDate: item.fromDate || "",
-        toDate: item.toDate || "",
-      }));
-    }
+    applyFormData(JSON.parse(raw));
     return true;
   } catch {
     localStorage.removeItem(STORAGE_KEY);
@@ -1031,6 +1046,154 @@ function showToast(message) {
     }, 280);
   }, 3200);
 }
+
+/* ---------- Employee history (localStorage) ----------
+ * Every successful calculation saves the form data under the employee's name.
+ * Recalculating the same name replaces the older entry and moves it to the
+ * top. Entries stay in this browser only.
+ */
+const historyDrawer = document.getElementById("history-drawer");
+const historyList = document.getElementById("history-list");
+const historyEmpty = document.getElementById("history-empty");
+const historyCount = document.getElementById("history-count");
+const historyClearBtn = document.getElementById("history-clear");
+
+const typeLabels = {
+  allowance: "علاوة",
+  promotion: "ترفيع",
+  both: "علاوة ثم ترفيع",
+};
+
+function historyNameKey(name) {
+  return String(name || "").trim().replace(/\s+/g, " ");
+}
+
+function loadHistory() {
+  try {
+    const list = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+    return Array.isArray(list) ? list.filter((entry) => entry && entry.data) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveHistory(list) {
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+  } catch {
+    showToast("تعذّر حفظ السجل على هذا الجهاز.");
+  }
+  updateHistoryCount(list.length);
+}
+
+function addToHistory(data, total) {
+  const key = historyNameKey(data["employee-name"]);
+  if (!key) return;
+  const list = loadHistory().filter((entry) => historyNameKey(entry.data["employee-name"]) !== key);
+  list.unshift({
+    id: `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
+    savedAt: new Date().toISOString(),
+    total,
+    data,
+  });
+  saveHistory(list.slice(0, MAX_HISTORY));
+}
+
+function updateHistoryCount(count = loadHistory().length) {
+  historyCount.hidden = count === 0;
+  historyCount.textContent = toEasternDigitString(count);
+}
+
+function formatHistoryTime(iso) {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  const time = `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`
+    .replace(/\d/g, (digit) => EASTERN_DIGITS[digit]);
+  const today = new Date();
+  const sameDay = date.toDateString() === today.toDateString();
+  const day = sameDay
+    ? "اليوم"
+    : formatNumericDate({ year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate() });
+  return `${day} · ${time}`;
+}
+
+function renderHistory() {
+  const list = loadHistory();
+  historyEmpty.hidden = list.length > 0;
+  historyClearBtn.hidden = list.length === 0;
+  historyList.innerHTML = list
+    .map((entry) => {
+      const data = entry.data;
+      const name = escapeHtml(historyNameKey(data["employee-name"]));
+      const jobTitle = escapeHtml(String(data["job-title"] || "").trim());
+      const total = Number.isFinite(entry.total) ? ` · ${toEasternDigits(entry.total)} دينار` : "";
+      return `
+        <li class="history-item">
+          <button type="button" class="history-load" data-id="${escapeHtml(entry.id)}">
+            <span class="history-name">${name}</span>
+            <span class="history-meta">${typeLabels[data.type] || ""}${total}</span>
+            <span class="history-meta">${jobTitle ? `${jobTitle} · ` : ""}${formatHistoryTime(entry.savedAt)}</span>
+          </button>
+          <button type="button" class="history-remove" data-id="${escapeHtml(entry.id)}" aria-label="حذف ${name} من السجل">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+          </button>
+        </li>
+      `;
+    })
+    .join("");
+}
+
+function restoreFromHistory(id) {
+  const entry = loadHistory().find((item) => item.id === id);
+  if (!entry) return;
+
+  applyFormData(entry.data, { replaceAll: true });
+  renderAllowancesList();
+  applyType();
+  clearFormErrors();
+  saveFormData();
+  result.hidden = true;
+  resultContent.innerHTML = "";
+
+  historyDrawer.close();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  document.getElementById("employee-name").focus({ preventScroll: true });
+  showToast(`تم استرجاع بيانات ${historyNameKey(entry.data["employee-name"])}.`);
+}
+
+document.getElementById("history-open").addEventListener("click", () => {
+  renderHistory();
+  historyDrawer.showModal();
+});
+
+document.getElementById("history-close").addEventListener("click", () => historyDrawer.close());
+
+// A click on the backdrop lands on the <dialog> itself, outside the panel.
+historyDrawer.addEventListener("click", (event) => {
+  if (event.target === historyDrawer) historyDrawer.close();
+});
+
+historyList.addEventListener("click", (event) => {
+  const removeBtn = event.target.closest(".history-remove");
+  if (removeBtn) {
+    saveHistory(loadHistory().filter((entry) => entry.id !== removeBtn.dataset.id));
+    renderHistory();
+    (historyList.querySelector(".history-load") || historyDrawer.querySelector("#history-close")).focus();
+    return;
+  }
+
+  const loadBtn = event.target.closest(".history-load");
+  if (loadBtn) restoreFromHistory(loadBtn.dataset.id);
+});
+
+historyClearBtn.addEventListener("click", () => {
+  if (!window.confirm("هل تريد حذف جميع الموظفين من السجل؟")) return;
+  saveHistory([]);
+  renderHistory();
+  document.getElementById("history-close").focus();
+});
 
 /** Normalize the promotion end date day to 30 when year/month are valid. */
 function normalizeEndDateDay() {
@@ -1105,7 +1268,8 @@ form.addEventListener("submit", (event) => {
     newJobTitle: document.getElementById("new-job-title").value.trim(),
   };
 
-  renderResult({ type, increments, promotion }, info);
+  const grandTotal = renderResult({ type, increments, promotion }, info);
+  addToHistory(readFormData(), grandTotal);
   result.hidden = false;
   result.scrollIntoView({ behavior: "smooth", block: "nearest" });
 });
@@ -1178,3 +1342,4 @@ loadOrgName();
 loadFormData();
 renderAllowancesList();
 applyType();
+updateHistoryCount();

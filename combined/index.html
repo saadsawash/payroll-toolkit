@@ -8,6 +8,35 @@
     <link rel="stylesheet" href="../styles.css" />
   </head>
   <body>
+    <button id="history-open" class="history-toggle no-print" type="button" aria-haspopup="dialog" aria-controls="history-drawer">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M3 12a9 9 0 1 0 3-6.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M3 4v4h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      <span>السجل</span>
+      <span id="history-count" class="history-count" hidden></span>
+    </button>
+
+    <dialog id="history-drawer" class="history-drawer no-print" aria-labelledby="history-title">
+      <div class="history-panel">
+        <div class="history-head">
+          <h2 id="history-title">سجل الموظفين</h2>
+          <button id="history-close" class="history-close" type="button" aria-label="إغلاق السجل">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
+        <p class="history-note">يُحفظ الموظف تلقائياً عند كل احتساب، على هذا الجهاز فقط. اختر موظفاً لاسترجاع بياناته في الحقول.</p>
+        <ul id="history-list" class="history-list"></ul>
+        <p id="history-empty" class="history-empty" hidden>لا يوجد موظفون في السجل بعد.</p>
+        <div class="history-foot">
+          <button id="history-clear" class="history-clear" type="button">مسح السجل</button>
+        </div>
+      </div>
+    </dialog>
+
     <div class="page">
       <header class="header">
         <a class="back-link" href="../">العودة للرئيسية</a>
