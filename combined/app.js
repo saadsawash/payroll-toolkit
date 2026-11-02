@@ -519,6 +519,11 @@ function validateForm() {
   const promotionStart = includesPromotion(type)
     ? parseDateInput(document.getElementById("from-date").value)
     : null;
+  // The increment may overlap the promotion's start month (office practice),
+  // but must not run past the promotion's end month.
+  const promotionEnd = includesPromotion(type)
+    ? parseDateInput(document.getElementById("to-date").value)
+    : null;
 
   if (includesAllowance(type)) {
     validateFields(allowanceFields);
@@ -554,8 +559,8 @@ function validateForm() {
         fail(toInput);
       } else if (start && !isBeforeMonth(start, end)) {
         fail(toInput, "يجب أن يكون تاريخ النهاية في شهر لاحق لشهر البداية.");
-      } else if (promotionStart && isBeforeMonth(promotionStart, end)) {
-        fail(toInput, "يجب ألا يتجاوز شهر نهاية العلاوة شهر بداية الترفيع.");
+      } else if (promotionEnd && isBeforeMonth(promotionEnd, end)) {
+        fail(toInput, "يجب ألا يتجاوز شهر نهاية العلاوة شهر نهاية الترفيع.");
       }
     });
   }
@@ -785,14 +790,16 @@ const sheetTitles = {
 };
 
 /**
- * Final amount = all increment arrears + promotion arrears + the last new
- * salary once (the salary for the month after the last period).
+ * Final amount:
+ * - With a promotion: all increment arrears + promotion arrears (the
+ *   promotion arrears already include each later month's full new salary).
+ * - Increments only: all increment arrears + the last new salary once (the
+ *   end month's salary).
  */
 function renderResult({ type, increments, promotion }, info) {
   const count = increments.length;
   const lastEnd = promotion ? promotion.end : increments[count - 1].end;
   const finalSalary = promotion ? promotion.newSalary : increments[count - 1].newSalary;
-  const paymentMonth = addMonths(lastEnd, 1);
   const parts = [
     ...increments.map((item, index) => ({
       amount: item.differencesTotal,
@@ -800,16 +807,15 @@ function renderResult({ type, increments, promotion }, info) {
     })),
     ...(promotion ? [{ amount: promotion.promotionTotal, label: "فروقات الترفيع" }] : []),
   ];
-  // Promotion only: the promotion arrears are the final amount (no salary
-  // added once on top). Other types add the last new salary once.
+  // With a promotion (promotion only or both), the promotion arrears already
+  // include the full new salary for each later month, so nothing is added on
+  // top. Increments only add the last new salary once.
   const promotionOnly = type === "promotion";
   // Increments only: the months run up to but not including the end month,
   // so the salary added once is the end month's own salary (step 4).
   const allowanceOnly = type === "allowance";
-  const finalSalaryMonth = allowanceOnly ? lastEnd : paymentMonth;
-  const grandTotal = promotionOnly
-    ? promotion.promotionTotal
-    : parts.reduce((sum, part) => sum + part.amount, 0) + finalSalary;
+  const partsTotal = parts.reduce((sum, part) => sum + part.amount, 0);
+  const grandTotal = promotion ? partsTotal : partsTotal + finalSalary;
   const labelPeriods = parts.length > 1;
 
   const allowanceDocLine = includesAllowance(type)
@@ -860,7 +866,7 @@ function renderResult({ type, increments, promotion }, info) {
               )
               .join("")}
             <span class="eq-op">+</span>
-            ${eqTerm(finalSalary, "الراتب بعد العلاوة", { meta: `راتب ${monthLabel(finalSalaryMonth.year, finalSalaryMonth.month)}` })}
+            ${eqTerm(finalSalary, "الراتب بعد العلاوة", { meta: `راتب ${monthLabel(lastEnd.year, lastEnd.month)}` })}
             <span class="eq-op">=</span>
             ${eqTerm(grandTotal, "المبلغ النهائي", { strong: true })}
           </div>
@@ -887,8 +893,6 @@ function renderResult({ type, increments, promotion }, info) {
     )
     .join("");
 
-  const finalSalaryLabel = promotion ? "الراتب بعد الترفيع" : "الراتب بعد آخر علاوة";
-
   const totalBlockHtml = promotionOnly || allowanceOnly
     ? ""
     : `
@@ -896,8 +900,6 @@ function renderResult({ type, increments, promotion }, info) {
         <h3 class="allowance-block-title">الإجمالي</h3>
         <div class="equation equation--total">
           ${sumTerms}
-          <span class="eq-op">+</span>
-          ${eqTerm(finalSalary, finalSalaryLabel, { meta: `راتب ${monthLabel(paymentMonth.year, paymentMonth.month)}` })}
           <span class="eq-op">=</span>
           ${eqTerm(grandTotal, "المبلغ النهائي", { strong: true })}
         </div>
