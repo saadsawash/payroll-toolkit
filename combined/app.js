@@ -8,6 +8,7 @@ const promotionSection = document.getElementById("promotion-section");
 const oldSalaryInput = document.getElementById("old-salary");
 const oldSalaryHint = document.getElementById("old-salary-hint");
 const orgNameInput = document.getElementById("org-name");
+const allowanceMonthsHint = document.getElementById("allowance-months-hint");
 const STORAGE_KEY = "tools-combined-v1";
 const ORG_NAME_KEY = "tools-org-name-v1";
 const HISTORY_KEY = "tools-combined-history-v1";
@@ -233,12 +234,14 @@ function listMonths(start, count) {
 /**
  * Increment arrears: difference × months, counting from the start month up to
  * but not including the end month. Days are ignored.
+ * With `includeEndMonth` (increments-then-promotion mode), the end month is
+ * counted too (e.g. May → November = 7 months).
  */
-function calculateAllowance({ currentSalary, newSalary, fromDate, toDate }) {
+function calculateAllowance({ currentSalary, newSalary, fromDate, toDate, includeEndMonth = false }) {
   const salaryDifference = newSalary - currentSalary;
   const start = parseDateInput(fromDate);
   const end = parseDateInput(toDate);
-  const differenceMonths = monthSpan(start, end);
+  const differenceMonths = monthSpan(start, end) + (includeEndMonth ? 1 : 0);
   const monthsList = listMonths(start, differenceMonths);
   const differencesTotal = salaryDifference * differenceMonths;
 
@@ -330,6 +333,9 @@ function applyType() {
   promotionSection.hidden = !includesPromotion(type);
 
   const linked = type === "both";
+  allowanceMonthsHint.textContent = linked
+    ? "تُحتسب أشهر العلاوة من شهر البداية لغاية شهر النهاية، مع احتساب شهر النهاية."
+    : "تُحتسب أشهر العلاوة من شهر البداية لغاية الشهر الذي يسبق شهر النهاية.";
   oldSalaryInput.readOnly = linked;
   oldSalaryHint.hidden = !linked;
   if (linked) syncLinkedOldSalary();
@@ -1240,6 +1246,7 @@ form.addEventListener("submit", (event) => {
           newSalary: Number(item.newSalary),
           fromDate: item.fromDate,
           toDate: item.toDate,
+          includeEndMonth: type === "both",
         }),
       )
     : [];
